@@ -1,0 +1,12 @@
+<odoo>
+    <record model="ir.ui.view" id="safar_view_employee_form">
+        <field name="name">Safar.view_employee_form</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='parent_id']" position="after">
+                <field name="s_cd_binome" string="Code Binôme"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
