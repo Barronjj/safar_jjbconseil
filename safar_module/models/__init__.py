@@ -12,6 +12,7 @@ from . import delai_fabrication
 from . import famille_client
 from . import gabarit_lectra
 from . import hr_employee
+from . import hr_employee_public
 from . import image_simulateur
 from . import partner
 from . import produit_client
