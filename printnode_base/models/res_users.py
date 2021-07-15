@@ -33,19 +33,21 @@ class User(models.Model):
 
     def __init__(self, pool, cr):
         # pylint: disable=return-in-init
-        init_res = super(User, self).__init__(pool, cr)
-        type(self).SELF_WRITEABLE_FIELDS = list(self.SELF_WRITEABLE_FIELDS)
-        type(self).SELF_WRITEABLE_FIELDS.extend([
-            'printnode_enabled',
-            'printnode_printer',
-            'user_label_printer',
-        ])
-        type(self).SELF_READABLE_FIELDS = list(self.SELF_READABLE_FIELDS)
-        type(self).SELF_READABLE_FIELDS.extend([
-            'printnode_enabled',
-            'printnode_printer',
-            'user_label_printer',
-        ])
+        """
+        Adding access rights on printnode related fields on user form
+        """
+
+        readable_fields = ['printnode_enabled',
+                           'printnode_printer',
+                           'user_label_printer',
+                           'printnode_rule_ids']
+        writable_fields = ['printnode_enabled',
+                           'printnode_printer',
+                           'user_label_printer']
+
+        init_res = super().__init__(pool, cr)
+        type(self).SELF_READABLE_FIELDS = type(self).SELF_READABLE_FIELDS + readable_fields
+        type(self).SELF_WRITEABLE_FIELDS = type(self).SELF_WRITEABLE_FIELDS + writable_fields
         return init_res
 
     def _get_shipping_label_printer(self):

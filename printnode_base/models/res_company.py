@@ -68,6 +68,16 @@ class Company(models.Model):
         default=100,
     )
 
+    print_package_with_label = fields.Boolean(
+        string='Print Package just after Shipping Label',
+        default=False,
+    )
+
+    printnode_package_report = fields.Many2one(
+        'ir.actions.report',
+        string='Package Report to Print',
+    )
+
 
 class Settings(models.TransientModel):
     _inherit = 'res.config.settings'
@@ -129,6 +139,16 @@ class Settings(models.TransientModel):
         related='company_id.printnode_notification_page_limit',
     )
 
+    print_package_with_label = fields.Boolean(
+        readonly=False,
+        related='company_id.print_package_with_label',
+    )
+
+    printnode_package_report = fields.Many2one(
+        readonly=False,
+        related='company_id.printnode_package_report',
+    )
+
     @api.model
     def fields_get(self, allfields=None, attributes=None):
         res = super(Settings, self).fields_get()
@@ -153,3 +173,15 @@ class Settings(models.TransientModel):
                 'def_wizard_report_id': wizard_domain,
             },
         }
+
+    @api.onchange('print_package_with_label', 'print_sl_from_attachment')
+    def _onchange_print_package_with_label(self):
+        if self.print_package_with_label:
+            self.print_sl_from_attachment = False
+        if self.print_sl_from_attachment:
+            self.print_package_with_label = False
+
+    def set_values(self):
+        if self.print_package_with_label and not self.group_stock_tracking_lot:
+            self.group_stock_tracking_lot = True
+        super(Settings, self).set_values()

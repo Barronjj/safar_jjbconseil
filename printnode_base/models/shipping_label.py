@@ -1,7 +1,8 @@
 # Copyright 2019 VentorTech OU
 # License OPL-1.0 or later.
 
-from odoo import models, fields
+from odoo import models, fields, _
+from odoo.exceptions import UserError
 
 
 class ShippingLabel(models.Model):
@@ -52,14 +53,27 @@ class ShippingLabel(models.Model):
         self.ensure_one()
         attachment_list = []
         paper_id = self.carrier_id.autoprint_paperformat_id
-        for label in self.label_ids:
+
+        def update_attachment_list(label):
             doc = label.document_id
             params = {
                 'title': doc.name,
                 'type': 'qweb-pdf' if doc.mimetype == 'application/pdf' else 'qweb-text',
                 'size': paper_id,
             }
+            if label.package_id:
+                params['package_id'] = label.package_id
             attachment_list.append((doc.datas.decode('ascii'), params))
+
+        # If there is a label in the context, then the print was called through the print button
+        # of one specific label
+        if self._context.get('label'):
+            label = self._context.get('label')
+            update_attachment_list(label)
+            return attachment_list
+
+        for label in self.label_ids:
+            update_attachment_list(label)
         return attachment_list
 
     def print_via_printnode(self):
@@ -72,6 +86,14 @@ class ShippingLabel(models.Model):
                 continue
             for ascii_data, params in attachment_list:
                 printer.printnode_print_b64(ascii_data, params)
+                if params.get('package_id') and self.env.user.company_id.print_package_with_label:
+                    report_id = self.env.user.company_id.printnode_package_report
+                    if not report_id:
+                        raise UserError(_(
+                            'There are no available package report for printing, please, '
+                            'define "Package Report to Print" in PrintNode -> Settings menu'
+                        ))
+                    printer.printnode_print(report_id, params.get('package_id'))
 
 
 class ShippingLabelDocument(models.Model):
@@ -91,3 +113,12 @@ class ShippingLabelDocument(models.Model):
         comodel_name='ir.attachment',
         string='Shipping Label Document',
     )
+
+    package_id = fields.Many2one(
+        string='Package',
+        comodel_name='stock.quant.package',
+        ondelete='set null',
+    )
+
+    def print_label_with_package_via_printnode(self):
+        self.shipping_id.with_context(label=self).print_via_printnode()

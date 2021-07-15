@@ -27,6 +27,9 @@ class StockPicking(models.Model):
             # Print product labels
             self.print_scenarios(action='print_product_labels_on_transfer')
 
+            # Print packages
+            self.print_scenarios(action='print_packages_label_on_transfer')
+
         return res
 
     def cancel_shipment(self):
@@ -59,6 +62,19 @@ class StockPicking(models.Model):
         """ Redefining a standard method
         """
         user = self.env.user
+
+        if user.company_id.printnode_enabled and user.printnode_enabled and\
+                user.company_id.print_package_with_label:
+            if self.picking_type_id == self.picking_type_id.warehouse_id.out_type_id:
+                move_lines_without_package = self.move_line_ids_without_package.filtered(
+                    lambda l: not l.result_package_id)
+                if move_lines_without_package:
+                    raise UserError(_('Some products on Delivery Order are not in Package. For '
+                                      'printing Package Slips + Shipping Labels, please, put in '
+                                      'pack remaining products. If you want to print only Shipping '
+                                      'Label, please, deactivate "Print Package just after Shipping'
+                                      ' Label" checkbox in PrintNode/Configuration/Settings'))
+
         auto_print = user.company_id.auto_send_slp
         if auto_print:
             # Expected UserError if there is no one shipping label printer is available.
@@ -144,9 +160,18 @@ class StockPicking(models.Model):
         return backorders
 
     def _create_shipping_label(self, message):
-        label_attachments = [
-            (0, 0, {'document_id': attach.id}) for attach in message.attachment_ids
-        ]
+        label_attachments = []
+        if len(self.package_ids) == len(message.attachment_ids):
+            for index in range(len(self.package_ids)):
+                vals = {
+                    'document_id': message.attachment_ids[-index - 1].id,
+                    'package_id': self.package_ids[index].id
+                }
+                label_attachments.append((0, 0, vals))
+        else:
+            label_attachments = [
+                (0, 0, {'document_id': attach.id}) for attach in message.attachment_ids
+            ]
         shipping_label_vals = {
             'carrier_id': self.carrier_id.id,
             'picking_id': self.id,
@@ -287,3 +312,9 @@ class StockPicking(models.Model):
                 printed = True
 
         return printed
+
+    def _scenario_print_packages_label_on_transfer(
+        self, report_id, printer_id, number_of_copies=1, **kwargs
+    ):
+        packages = self.mapped('package_ids')
+        printer_id.printnode_print(report_id, packages, copies=number_of_copies)

@@ -190,7 +190,7 @@ class PrintNodePrinter(models.Model):
         data = {
             'printerId': self.printnode_id,
             'title': self._format_title(objects, copies),
-            'source': 'odoo',
+            'source': self._get_source_name(),
             'contentType': ['raw_base64', 'pdf_base64'][pdf],
             'content': base64.b64encode(content).decode('ascii'),
             'qty': copies,
@@ -306,7 +306,7 @@ class PrintNodePrinter(models.Model):
                 ', '.join([p.name for p in self.format_ids])
             )
 
-    def _get_printnode_base_version(self):
+    def _get_source_name(self):
         self.env.cr.execute(
             'SELECT latest_version FROM ir_module_module WHERE name=\'printnode_base\''
         )
@@ -314,7 +314,8 @@ class PrintNodePrinter(models.Model):
         full_version = result and result[0]
         split_value = full_version and full_version.split('.')
         module_version = split_value and '.'.join(split_value[-3:])
-        return module_version
+        source_name = 'Odoo Direct Print PRO %s' % module_version
+        return source_name
 
     def printnode_print_b64(self, ascii_data, params, check_printer_format=True):
         self.ensure_one()
@@ -328,7 +329,7 @@ class PrintNodePrinter(models.Model):
             'printerId': self.printnode_id,
             'qty': params.get('copies', 1),
             'title': params.get('title'),
-            'source': 'Odoo Direct Print PRO %s' % self._get_printnode_base_version(),
+            'source': self._get_source_name(),
             'contentType': con_type,
             'content': ascii_data,
         }

@@ -440,7 +440,15 @@
                         <field name="carrier_id" ref="delivery_carrier"/>
                         <field name="picking_id"/>
                         <field name="tracking_numbers"/>
-                        <field name="label_ids"/>
+                        <field name="label_ids">
+                            <tree create="false" edit="false" delete="false">
+                                <field name="document_id"/>
+                                <field name="package_id"/>
+                                <button name="print_label_with_package_via_printnode" type="object" icon="fa-print"
+                                        string="Send to Printer" aria-label="Send to Printer"
+                                        title="Send shipping labels to Printer via PrintNode"/>
+                            </tree>
+                        </field>
                         <field name="label_status"/>
                     </group>
                 </sheet>
@@ -476,6 +484,7 @@
                 <sheet>
                     <group>
                         <field name="document_id" widget="many2one_barcode"/>
+                        <field name="package_id"/>
                     </group>
                 </sheet>
             </form>
@@ -653,22 +662,50 @@
                                     </div>
                                 </div>
                             </div>
-                            <br/>
-                            <div class="o_setting_left_pane">
-                                <field name="print_sl_from_attachment"/>
+                            <div attrs="{'invisible': [('print_sl_from_attachment', '=', True)]}">
+                                <br/>
+                                <div class="o_setting_left_pane">
+                                    <field name="print_package_with_label"/>
+                                </div>
+                                <div class="o_setting_right_pane">
+                                    <label for="print_package_with_label"/>
+                                    <div class="text-muted">
+                                        (Experimental) System will try to guess which Shipping Label is related to which Package.
+                                        This is quite comlex in Odoo standard and is possible ONLY if on every Delivery Order you
+                                        will be using "Put In Pack" button. So quantity of Shipping Labels will be equal to quantity
+                                        of Packages related to Delivery Order. So by enabling this checkbox you also will automatically
+                                        enable "Put In  Pack" feature on Delivery Order AND will force users to always "Put In Pack"
+                                        on Delivery Order. Additionally it will Print Package on the same Label Printer as Shipping
+                                        Label (just after Shipping Label is Printed).
+                                    </div>
+                                    <div class="content-group" attrs="{'invisible': [('print_package_with_label', '=', False)]}">
+                                        <div class="mt16 row">
+                                            <label for="printnode_package_report" class="col-3 col-lg-3 o_light_label"/>
+                                            <field name="printnode_package_report" class="oe_inline"
+                                                attrs="{'required': [('print_package_with_label', '=', True)]}" options="{'no_create': True}"
+                                                domain="[('model', '=', 'stock.quant.package'), ('report_type', 'in', ['qweb-pdf', 'qweb-text'])]"/>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="o_setting_right_pane">
-                                <label for="print_sl_from_attachment"/>
-                                <div class="text-muted">
-                                    If you use Odoo Enterprise standard carrier integration modules
-                                    (DHL, UPS, Fedex, USPS and etc.), than do not select this checkbox.
-                                    But in some cases when you use Shipping Carrier Integration modules
-                                    purchased from Odoo App Store that are done NOT according to
-                                    Odoo Standards of coding, auto-printing of shipping labels may not work.
-                                    As this modules are adding Shipping Labels directly to the attachments
-                                    avoiding standard Odoo mechanisms. This checkbox helps you to workaround
-                                    this problem. If enabled, it will try to search for latest attachments in
-                                    Delivery Order with the same Creation Date and will send them to the printer.
+                            <div attrs="{'invisible': [('print_package_with_label', '=', True)]}">
+                                <br/>
+                                <div class="o_setting_left_pane">
+                                    <field name="print_sl_from_attachment"/>
+                                </div>
+                                <div class="o_setting_right_pane" attrs="{'invisible': [('print_package_with_label', '=', True)]}">
+                                    <label for="print_sl_from_attachment"/>
+                                    <div class="text-muted">
+                                        If you use Odoo Enterprise standard carrier integration modules
+                                        (DHL, UPS, Fedex, USPS and etc.), than do not select this checkbox.
+                                        But in some cases when you use Shipping Carrier Integration modules
+                                        purchased from Odoo App Store that are done NOT according to
+                                        Odoo Standards of coding, auto-printing of shipping labels may not work.
+                                        As this modules are adding Shipping Labels directly to the attachments
+                                        avoiding standard Odoo mechanisms. This checkbox helps you to workaround
+                                        this problem. If enabled, it will try to search for latest attachments in
+                                        Delivery Order with the same Creation Date and will send them to the printer.
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -692,22 +729,22 @@
                                     Shows popup message if report was successfully sent to printnode service.
                                 </div>
                             </div>
-                        </div>
-                        <br/>
-                        <div class="o_setting_right_pane">
-                            <label for="wizard_report_ids"/>
-                            <field name="wizard_report_ids" widget="many2many_tags" options="{'no_create': True}"/>
-                            <div class="text-muted">
-                                Select list of reports that should be visible to end user when they invoke
-                                Product Label Printing Wizard. If this list is empty, then all available reports
-                                for Product will be shown to the user.
-                            </div>
-                            <div>
-                                <br/>
-                                <label for="def_wizard_report_id"/>
-                                <field name="def_wizard_report_id" widget="many2one" options="{'no_create': True}"/>
+                            <br/>
+                            <div class="o_setting_right_pane">
+                                <label for="wizard_report_ids"/>
+                                <field name="wizard_report_ids" widget="many2many_tags" options="{'no_create': True}"/>
                                 <div class="text-muted">
-                                    Select here default Product Label that will be pre-selected when user opens Product Label Printing Wizard.
+                                    Select list of reports that should be visible to end user when they invoke
+                                    Product Label Printing Wizard. If this list is empty, then all available reports
+                                    for Product will be shown to the user.
+                                </div>
+                                <div>
+                                    <br/>
+                                    <label for="def_wizard_report_id"/>
+                                    <field name="def_wizard_report_id" widget="many2one" options="{'no_create': True}"/>
+                                    <div class="text-muted">
+                                        Select here default Product Label that will be pre-selected when user opens Product Label Printing Wizard.
+                                    </div>
                                 </div>
                             </div>
                         </div>

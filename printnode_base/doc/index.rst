@@ -183,6 +183,13 @@ Change Log
 
 |
 
+* 1.8.0 (2021-07-14)
+    - Added possibility to print Package Document together with the Shipping Label
+    - Added Print Scenario to Print all Packages after Transfer Validation
+
+* 1.7.3 (2021-07-13)
+    - Fix issue with auto-test for purchase order flow
+
 * 1.7.2 (2021-07-08)
     - Fix issue with printing multiple documents using scenarios with the same action
 

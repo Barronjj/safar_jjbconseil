@@ -66,5 +66,12 @@
             <field name="reports_model_id" eval="ref('stock.model_stock_production_lot')"/>
         </record>
 
+        <record id="print_packages_label_on_transfer" model="printnode.scenario.action">
+            <field name="name">Print Packages Label on Transfer (after validation)</field>
+            <field name="code">print_packages_label_on_transfer</field>
+            <field name="model_id" eval="ref('stock.model_stock_picking')"/>
+            <field name="reports_model_id" eval="ref('stock.model_stock_quant_package')"/>
+        </record>
+
     </data>
 </odoo>

@@ -17,14 +17,16 @@ class StockMoveLine(models.Model):
         return mls
 
     def write(self, vals):
-        qty_change = 0
-        if 'qty_done' in vals:
-            qty_change = vals.get('qty_done') - self.qty_done
+        changed_move_lines = self.env['stock.move.line']
+        for move_line in self:
+            if 'qty_done' in vals:
+                qty_change = vals.get('qty_done') - move_line.qty_done
+                if qty_change:
+                    changed_move_lines |= move_line
 
         res = super().write(vals)
 
-        if qty_change > 0:
-            self._call_scenarios(self)
+        self._call_scenarios(changed_move_lines)
 
         return res
 
