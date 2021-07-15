@@ -18,10 +18,9 @@
         <xpath expr="//div[@id='informations']/div[2]" position="after">
           <div class="row" id="so_date">
             <div class="mb-3 col-6">
-              <strong>Date Expédition:</strong>
-              <t t-if="sale_order.commitment_date" t-esc="sale_order.commitment_date" t-options='{"widget":"date"}'/>
-              <t t-elif="sale_order.expected_date" t-esc="sale_order.expected_date" t-options='{"widget":"date"}'/>
-              <t t-else="" t-esc="sale_order.effective_date" t-options="{'widget':'date', 'format': 'EEEE dd MMM'}"/>
+                <strong>Date Expédition:</strong>
+                <t t-if="sale_order.commitment_date" t-esc="sale_order.commitment_date" t-options='{"widget":"date"}'/>
+                <t t-else="" t-esc="sale_order.effective_date" t-options="{'widget':'date', 'format': 'EEEE dd MMM'}"/>
             </div>
           </div>
         </xpath>
