@@ -9,4 +9,15 @@
             </xpath>
         </field>
     </record>
+
+    <record model="ir.ui.view" id="safar_hr_employee_public_view_form">
+        <field name="name">Safar.hr_employee_public_view_form</field>
+        <field name="model">hr.employee.public</field>
+        <field name="inherit_id" ref="hr.hr_employee_public_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='parent_id']" position="after">
+                <field name="s_cd_binome" string="Code Binôme"/>
+            </xpath>
+        </field>
+    </record>
 </odoo>

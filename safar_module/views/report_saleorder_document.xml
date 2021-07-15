@@ -58,9 +58,9 @@
                 <strong>Date Expédition :</strong>
                 <p class="m-0" t-field="doc.commitment_date" t-options="{'widget': 'date', 'format': 'EEEE dd MMM'}"/>
             </div>
-            <div t-elif="doc.expected_date and not doc.commitment_date" class="col-auto mw-100 mb-2">
+            <div t-else="" class="col-auto mw-100 mb-2">
                 <strong>Date Expédition :</strong>
-                <p class="m-0" t-field="doc.expected_date" t-options="{'widget': 'date', 'format': 'EEEE dd MMM'}"/>
+                <p class="m-0" t-field="doc.effective_date" t-options="{'widget': 'date', 'format': 'EEEE dd MMM'}"/>
             </div>
             <div t-if="doc.s_code_concession_related" class="col-auto mw-100 mb-2">
                 <strong>Code Concession :</strong>
